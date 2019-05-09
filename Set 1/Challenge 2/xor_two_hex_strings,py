@@ -6,10 +6,10 @@ def xor_hex(a, b):
         print('Inputs must be the same length.')
         return 0
 
-    result = bytearray()
     a_bytes = bytes.fromhex(a)
     b_bytes = bytes.fromhex(b)
 
+    result = bytearray()
     for idx in range(0, len(a_bytes)):
         result.append(a_bytes[idx] ^ b_bytes[idx])
     return result

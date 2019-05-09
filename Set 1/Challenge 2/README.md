@@ -40,7 +40,7 @@ So all we have to do is:
 
 Step 1 is accomplished using bytes.fromhex().
 
-Step 2 should happen automatically if python allows bitwise operations on hex values.
+Step 2 happens immediately after step 1 thanks to that function.
 
 Step 3 we can't do with a simple bytes ^ bytes, we have to step through each byte individually. For that we will construct a for loop which will create the resulting byte array byte by byte. This is accomplished with the built in append function which supports the bytearray type.
 
