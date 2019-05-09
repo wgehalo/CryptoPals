@@ -11,13 +11,15 @@ after hex decoding, and when XOR'd against:
 
 should produce:
 `746865206b696420646f6e277420706c6179`
+
 ---
 
 # Walkthrough
 
 This seems simple enough. XOR is a bitwise operation, short for `exclusive or`. It compares the bits of two binary values, and sets the resulting bit to 1 only if the bits compared are not equal. For example:
 
-```1001011
+```
+1001011
 0001100
 ```
 This will produce: `10001001`
