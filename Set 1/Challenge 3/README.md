@@ -206,7 +206,10 @@ The final for loop prints the first 4 items in the decrypted list. I decided to 
 
 Running the script I get the following output:
 ```
-{'score': 15298, 'data': bytearray(b'Ieeacdm*GI-y*fcao*k*ze\x7fdn*el*hkied')}fcao*k*ze\x7fdn*el*hkied')}                       Y\nFCAO\nK\nZE_DN\nEL\nHKIED')}{'score': 15298, 'data': bytearray(b'iEEACDM\ngi\r like a pound of bacon")}Y\nFCAO\nK\nZE_DN\nEL\nHKIED')}                   \x07S\x00LIKE\x00A\x00POUND\x00OF\x00BACON')}{'score': 14223, 'data': bytearray(b"Cooking MC\'s like a pound of bacon")}{'score': 14223, 'data': bytearray(b'cOOKING\x00mc\x07S\x00LIKE\x00A\x00POUND\x00OF\x00BACON')}
+{'score': 15298, 'data': bytearray(b'Ieeacdm*GI-y*fcao*k*ze\x7fdn*el*hkied')}
+{'score': 15298, 'data': bytearray(b'iEEACDM\ngi\rY\nFCAO\nK\nZE_DN\nEL\nHKIED')}
+{'score': 14223, 'data': bytearray(b"Cooking MC\'s like a pound of bacon")}
+{'score': 14223, 'data': bytearray(b'cOOKING\x00mc\x07S\x00LIKE\x00A\x00POUND\x00OF\x00BACON')}
 ```
 
 Python is nice enough to print the byte arrays as string if it can, escaping non-utf8 values with their hex codes when it cannot translate. We can see the successfully decrypted text, with a score of 14233. There's a pretty similar one right below it, however we can see the spaces and single quotes, as well as the case weren't quite properly decrypted.
