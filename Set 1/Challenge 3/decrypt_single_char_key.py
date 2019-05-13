@@ -6,3 +6,17 @@ def get_english_score(input_bytes):
         'V': 105, 'K': 54, 'X': 23, 'J': 16, 'Q': 12, 'Z': 9}
 
     return sum([char_scores.get(chr(byte), 0) for byte in input_bytes.upper()])
+
+input = '1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736'
+input_bytes = bytes.fromhex(input)
+decrypted = []
+
+for n in range(256):
+    raw = bytearray([byte ^ n for byte in input_bytes])
+    score = get_english_score(raw)
+    decrypted.append({'score' : score, 'data': raw})
+
+decrypted.sort(key=lambda s: s['score'] , reverse=True)
+
+for i in range(4):
+    print(decrypted[i])

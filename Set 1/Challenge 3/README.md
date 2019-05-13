@@ -130,3 +130,85 @@ The operation being run on each byte is `char_scores.get(chr(byte), 0)`
 
 `char_scores.get()` will attempt to retrieve the value assigned to the key with the name of the character, if it's not found it will simply return a 0.
 This will take care of decryptions which lead to non-printable characters, or characters not in our scoring dictionary. The second parameter `0` is the value the function should return when the key is not present so that's how it knows to return 0 for those instances.
+
+---
+
+## Decrypting the cipher via XOR
+
+Now that we have a rudimentary english scoring system we can move on to decrypting the cipher. 
+
+I accomplished the decryption with the following code:
+```python
+input = '1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736'
+input_bytes = bytes.fromhex(input)
+decrypted = []
+
+for n in range(256):
+    raw = bytearray([byte ^ n for byte in input_bytes])
+    score = get_english_score(raw)
+    decrypted.append({'score' : score, 'data': raw})
+
+decrypted.sort(key=lambda s: s['score'] , reverse=True)
+
+for i in range(4):
+    print(decrypted[i])
+```
+
+
+# Let's break down what each section does.
+
+## Setting up:
+
+```python
+input = '1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736'
+input_bytes = bytes.fromhex(input)
+decrypted = []
+```
+
+The input value taken from the website has the bytes  extracted and placed into a bytearray object using `bytes.fromhex()`. This allows us to utilize the english scoring function which expects a bytearray to work with. It also allows the XOR operation which is needed to decrypt the cipher.
+
+`decrypted = []` creates a new list object. This will contain each decryption attempt. Since we don't know what value is the correct value to XOR against we have to store each attempt so we can evaluate them based on the english score.
+
+## Brute forcing each possible XOR:
+
+```python
+for n in range(256):
+    raw = bytearray([byte ^ n for byte in input_bytes])
+    score = get_english_score(raw)
+    decrypted.append({'score' : score, 'data': raw})
+```
+
+The decryption attempts occur in this for loop. We iterate 0 through 255, and during each iteration XOR that value against each byte in the bytearray of the cipher text `input_bytes`. The xor operation occurs using list comprehension, and the resulting list is passed to the `bytearray()` function which converts the xor'd list to a bytearray. 
+
+The new bytearray is then passed to our scoring function `get_english_score()`. The result of the score, as well as the new byte array, is appended as a dictionary object to the list of attempted decryptions.
+
+## Sorting the results:
+```python
+decrypted.sort(key=lambda s: s['score'] , reverse=True)
+
+for i in range(4):
+    print(decrypted[i])
+```
+
+The sorting can now occur. We are only interested in the highest scoring results. Thankfully Python has a built in way to sort a list. `decrypted.sort(key=lambda s: s['score'] , reverse=True)` , looks kind of complicated but it's required to sort the way we want.
+
+Since each item in our list is a dictionary, we have to tell Python how to properly sort the list. A lambda function is used to keep the code succint. The lambda function does one thing: It returns the value of `score`.
+
+I'll try to keep this explanation brief. Python sees the lambda function passed as the key parameter for the sorting function. The keyword lambda is the required syntax to implement a lambda function. The following `s` is a randomly chosen variable name, it could be anything we like, and it will refer to the current item in the list the sort function is currently processing.
+
+So, the function itself, using s which indicates the current item in the last, will retrieve the value of 'score'. This will return the integer assigned by the scoring function, and sort can process these values and place them in order.
+
+`reverse=True` is a way to have the list sorted from highest value to lowest, which is exactly what we want for this purpose.
+
+The final for loop prints the first 4 items in the decrypted list. I decided to print the first 4 since I know my scoring function won't be compeltely accurate. A list of 4 items is pretty easy to analyze manually as well.
+
+# Getting the answer
+
+Running the script I get the following output:
+```
+{'score': 15298, 'data': bytearray(b'Ieeacdm*GI-y*fcao*k*ze\x7fdn*el*hkied')}fcao*k*ze\x7fdn*el*hkied')}                       Y\nFCAO\nK\nZE_DN\nEL\nHKIED')}{'score': 15298, 'data': bytearray(b'iEEACDM\ngi\r like a pound of bacon")}Y\nFCAO\nK\nZE_DN\nEL\nHKIED')}                   \x07S\x00LIKE\x00A\x00POUND\x00OF\x00BACON')}{'score': 14223, 'data': bytearray(b"Cooking MC\'s like a pound of bacon")}{'score': 14223, 'data': bytearray(b'cOOKING\x00mc\x07S\x00LIKE\x00A\x00POUND\x00OF\x00BACON')}
+```
+
+Python is nice enough to print the byte arrays as string if it can, escaping non-utf8 values with their hex codes when it cannot translate. We can see the successfully decrypted text, with a score of 14233. There's a pretty similar one right below it, however we can see the spaces and single quotes, as well as the case weren't quite properly decrypted.
+
+In addition, we have two results which actually scored higher than the real result. This means, as I suspected, the most work to be done here lies in the scoring system. Something new to learn, I've already been looking at something called n-grams. For now I'm calling this a success. It's easy enough to look at 4 results and we clearly see the intended message.
