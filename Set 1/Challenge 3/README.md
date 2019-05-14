@@ -135,7 +135,7 @@ This will take care of decryptions which lead to non-printable characters, or ch
 
 ## Decrypting the cipher via XOR
 
-Now that we have a rudimentary english scoring system we can move on to decrypting the cipher. 
+Now that we have a rudimentary english scoring system we can move on to decrypting the cipher.
 
 I accomplished the decryption with the following code:
 ```python
@@ -178,7 +178,7 @@ for n in range(256):
     decrypted.append({'score' : score, 'data': raw})
 ```
 
-The decryption attempts occur in this for loop. We iterate 0 through 255, and during each iteration XOR that value against each byte in the bytearray of the cipher text `input_bytes`. The xor operation occurs using list comprehension, and the resulting list is passed to the `bytearray()` function which converts the xor'd list to a bytearray. 
+The decryption attempts occur in this for loop. We iterate 0 through 255, and during each iteration XOR that value against each byte in the bytearray of the cipher text `input_bytes`. The xor operation occurs using list comprehension, and the resulting list is passed to the `bytearray()` function which converts the xor'd list to a bytearray.
 
 The new bytearray is then passed to our scoring function `get_english_score()`. The result of the score, as well as the new byte array, is appended as a dictionary object to the list of attempted decryptions.
 
@@ -215,3 +215,25 @@ Running the script I get the following output:
 Python is nice enough to print the byte arrays as string if it can, escaping non-utf8 values with their hex codes when it cannot translate. We can see the successfully decrypted text, with a score of 14233. There's a pretty similar one right below it, however we can see the spaces and single quotes, as well as the case weren't quite properly decrypted.
 
 In addition, we have two results which actually scored higher than the real result. This means, as I suspected, the most work to be done here lies in the scoring system. Something new to learn, I've already been looking at something called n-grams. For now I'm calling this a success. It's easy enough to look at 4 results and we clearly see the intended message.
+
+# Improving the scoring
+
+After a bit of thinking and playing around I realized a few things:
+
+1. The invalid 3 in the top 4 have no spaces.
+2. They all have utf8 codes which aren't representable using alphanumeric or special characters.
+
+I decided to tweak the list to be inclusive by adding spaces, and some select special characeters. I then changed the dictionary get default to `-5000`, which means any decrypted text that has a single character not in our list will take a serious hit to the score. It might be overkill, future use will most likely require adjusments.
+
+I also decided to add a try/except clause, that returns 0 if it cannot decode the bytearray to `utf8`. This will ensure any strings which contain invalid `utf8` values are a flat 0.
+
+I have a feeling I'm going to implement some bigram detection soon, which is the detection of two characters in a row and the likelyhood they are English.
+
+For now, the small updates were sufficient enough to get the correct answer to the top:
+
+```
+{'score': 14263, 'data': bytearray(b"Cooking MC\'s like a pound of bacon"), 'key': 88}
+{'score': 8041, 'data': bytearray(b"Dhhlni`\'JD t\'knlb\'f\'whric\'ha\'efdhi"), 'key': 95}
+{'score': 0, 'data': bytearray(b'\x9b\xb7\xb7\xb3\xb1\xb6\xbf\xf8\x95\x9b\xff\xab\xf8\xb4\xb1\xb3\xbd\xf8\xb9\xf8\xa8\xb7\xad\xb6\xbc\xf8\xb7\xbe\xf8\xba\xb9\xbb\xb7\xb6'), 'key': 128}
+{'score': 0, 'data': bytearray(b'\x9a\xb6\xb6\xb2\xb0\xb7\xbe\xf9\x94\x9a\xfe\xaa\xf9\xb5\xb0\xb2\xbc\xf9\xb8\xf9\xa9\xb6\xac\xb7\xbd\xf9\xb6\xbf\xf9\xbb\xb8\xba\xb6\xb7'), 'key': 129}
+```
